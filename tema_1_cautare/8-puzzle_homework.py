@@ -142,12 +142,31 @@ class Graph:
             return h
 
     '''
-    @ :param x, y       := coordinates of the value which is going to be switched with the wildcard
-    @ :param x_w, y_w   := coordinates of the wildcard
+    @ :param l_move, c_move     := coordinates at which new_value is moved
+    @ :param new_value          := the value which is moved on the grid
     '''
-    def get_move_validity(self, matrix: List[List[int]], x, y, x_w, y_w) -> bool:
+    def get_move_validity(self, matrix: List[List[int]], new_value: int, l_move: int, c_move: int) -> bool:
         # check whether the current move is valid or not
+        # count the neighbor values with different parities
+        neighbors = {[l_move, c_move + 1],      # -> (0, 1)
+                     [l_move - 1, c_move + 1],  # -> (-1, 1)
+                     [l_move - 1, c_move],      # -> (-1, 0)
+                     [l_move - 1, c_move - 1],  # -> (-1, -1)
+                     [l_move, c_move - 1],      # -> (0, -1)
+                     [l_move + 1, c_move - 1],  # -> (1, -1)
+                     [l_move + 1, c_move],      # -> (0, -1)
+                     [l_move + 1, c_move + 1]}  # -> (1, 1)
+        # coordinates of the neighbors
+        parity = 0
+        for x_move, y_move in neighbors:
+            # check for the coordinates to be valid
+            if 0 <= x_move < 3 and 0 <= y_move < 3:
+                # decrement parity if neighbor is odd else increment
+                parity += -1 if (matrix[x_move][y_move] % 2) else 1
 
+        if parity < 0 == (-1 if new_value % 2 else 1) < 0:
+            # check the above line for a bigger value of opposite parity
+            return True
         return False
 
     def __repr__(self):
