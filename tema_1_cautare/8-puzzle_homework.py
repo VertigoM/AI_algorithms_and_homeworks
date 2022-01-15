@@ -102,8 +102,7 @@ class Graph:
         # for every possible move
         for l_move, c_move in directions:
             # check if the indices are valid or not
-            # TODO: implement move validity
-            if 0 <= l_move < 3 and 0 <= c_move < 3:
+            if self.get_move_validity(node.info, l_empty, c_empty, l_move, c_move):
                 # get a deep copy of the current grid state
                 matrix_copy = copy.deepcopy(node.info)
                 # switch values between the wildcard and value at indices (l_move, c_move)
@@ -116,6 +115,7 @@ class Graph:
                     new_node_g = node.cost + arc_cost
                     new_node_h = self.compute_h(matrix_copy, h_type)
                     new_node = Node(matrix_copy, node, new_node_g, new_node_h)
+                    print(f'[DEBUG] Valid successor found:\n{new_node}\nPATH:\n{new_node.print_path(print_path=True)}')
                     s_list.append(new_node)
         return s_list
 
@@ -142,32 +142,47 @@ class Graph:
             return h
 
     '''
-    @ :param l_move, c_move     := coordinates at which new_value is moved
-    @ :param new_value          := the value which is moved on the grid
+    @ :param l_empty, c_empty   := current coordinates of the wildcard
+    @ :param l_move, c_move     := coordinates at which wildcard is moved to
     '''
-    def get_move_validity(self, matrix: List[List[int]], new_value: int, l_move: int, c_move: int) -> bool:
+    def get_move_validity(self, matrix: List[List[int]], l_empty: int, c_empty: int, l_move: int, c_move: int, debug=False) -> bool:
+        if not (0 <= l_move < 3 and 0 <= c_move < 3):
+            return False
+        moved_value = matrix[l_move][c_move]
         # check whether the current move is valid or not
         # count the neighbor values with different parities
-        neighbors = {[l_move, c_move + 1],      # -> (0, 1)
-                     [l_move - 1, c_move + 1],  # -> (-1, 1)
-                     [l_move - 1, c_move],      # -> (-1, 0)
-                     [l_move - 1, c_move - 1],  # -> (-1, -1)
-                     [l_move, c_move - 1],      # -> (0, -1)
-                     [l_move + 1, c_move - 1],  # -> (1, -1)
-                     [l_move + 1, c_move],      # -> (0, -1)
-                     [l_move + 1, c_move + 1]}  # -> (1, 1)
+        neighbors = [[l_empty, c_empty + 1],      # -> (0, 1)
+                     [l_empty - 1, c_empty + 1],  # -> (-1, 1)
+                     [l_empty - 1, c_empty],      # -> (-1, 0)
+                     [l_empty - 1, c_empty - 1],  # -> (-1, -1)
+                     [l_empty, c_empty - 1],      # -> (0, -1)
+                     [l_empty + 1, c_empty - 1],  # -> (1, -1)
+                     [l_empty + 1, c_empty],      # -> (0, -1)
+                     [l_empty + 1, c_empty + 1]]  # -> (1, 1)
         # coordinates of the neighbors
         parity = 0
         for x_move, y_move in neighbors:
+            if debug:
+                print(f'[DEBUG] Testing for coordinates: {x_move} {y_move}')
             # check for the coordinates to be valid
-            if 0 <= x_move < 3 and 0 <= y_move < 3:
-                # decrement parity if neighbor is odd else increment
-                parity += -1 if (matrix[x_move][y_move] % 2) else 1
-
-        if parity < 0 == (-1 if new_value % 2 else 1) < 0:
+            if 0 <= x_move < 3 and 0 <= y_move < 3 and (x_move != l_move or y_move != c_move):
+                # if value is not the wildcard
+                if debug:
+                    print(f'[DEBUG] Matrix: {matrix}')
+                if matrix[x_move][y_move] != 0:
+                    # decrement parity if neighbor is odd else increment
+                    parity += -1 if (matrix[x_move][y_move] & 1) else 1
+        if debug:
+            print(f'[DEBUG] Parity: {parity}')
+        if (parity < 0) != ((-1 if (moved_value & 1) else 1) < 0):
             # check the above line for a bigger value of opposite parity
-            return True
-        return False
+            above_line = l_empty - 1
+            if above_line >= 0:
+                for value in matrix[above_line]:
+                    if (value > moved_value) and ((value & 1) != (moved_value & 1)):
+                        print(f'[DEBUG] Invalid move! {(l_empty, c_empty)} to {(l_move, c_move)}')
+                        return False
+        return True
 
     def __repr__(self):
         s = ''
@@ -192,7 +207,7 @@ def breadth_first(graph: Graph, n: int = 1):
         current_node = open_list.pop(0)
 
         if graph.get_scope_status(current_node.info):
-            print('Solution: ')
+            print('Solution found! Printing path...')
             current_node.print_path(print_cost=True, print_path=True)
             print('----------------------\n')
             input()

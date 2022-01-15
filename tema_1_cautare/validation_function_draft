@@ -1,0 +1,37 @@
+    def get_move_validity(matrix: List[List[int]], l_empty: int, c_empty: int, l_move: int, c_move: int) -> bool:
+        if not (0 <= l_move < 3 and 0 <= c_move < 3):
+            return False
+        moved_value = matrix[l_move][c_move]
+        moved_value_parity = moved_value & 1
+        # check whether the current move is valid or not
+        # count the neighbor values with different parities
+        neighbors = [[l_empty, c_empty + 1],      # -> (0, 1)
+                     [l_empty - 1, c_empty + 1],  # -> (-1, 1)
+                     [l_empty - 1, c_empty],      # -> (-1, 0)
+                     [l_empty - 1, c_empty - 1],  # -> (-1, -1)
+                     [l_empty, c_empty - 1],      # -> (0, -1)
+                     [l_empty + 1, c_empty - 1],  # -> (1, -1)
+                     [l_empty + 1, c_empty],      # -> (0, -1)
+                     [l_empty + 1, c_empty + 1]]  # -> (1, 1)
+        # coordinates of the neighbors
+        parity = 0
+        for x_move, y_move in neighbors:
+            print(f'[DEBUG] Testing for coordinates: {x_move} {y_move}')
+            # check for the coordinates to be valid
+            if 0 <= x_move < 3 and 0 <= y_move < 3 and (x_move != l_move or y_move != c_move):
+                # if value is not the wildcard
+                print(f'[DEBUG] Matrix: {matrix}')
+                if matrix[x_move][y_move] != 0:
+                    # decrement parity if neighbor is odd else increment
+                    parity += -1 if (matrix[x_move][y_move] & 1) else 1
+
+        print(f'[DEBUG] Parity: {parity}')
+        if (parity < 0) != ((-1 if (moved_value & 1) else 1) < 0):
+            # check the above line for a bigger value of opposite parity
+            above_line = l_empty - 1
+            if above_line >= 0:
+                for value in matrix[above_line]:
+                    if (value > moved_value) and ((value & 1) != (moved_value & 1)):
+                        print(f'[DEBUG] Invalid move! {(l_empty, c_empty)} to {(l_move, c_move)}')
+                        return False
+        return True
