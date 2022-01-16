@@ -1,3 +1,8 @@
+'''
+    Documentation can be found @ https://docs.google.com/document/d/18Wtls57HGXGZvzp9UwsdLGJyDJRSyQU33telP9dNQqI/edit?usp=sharing
+    Name: Alecu Mihai-Marian, 352
+'''
+
 import copy
 import heapq
 import os
@@ -235,7 +240,7 @@ class PuzzleSolver:
     def __init__(self, input_path: str, output_path: str, no_required_solutions: int, timeout_value: int):
         self.input_path = input_path
         self.output_path = output_path
-        self.graph = Graph('dir_in/8-puzzle.txt')
+        self.graph = Graph('dir_in/8-puzzle_final.txt')
         self.no_requierd_solutions = no_required_solutions
         self.timeout_value = timeout_value
 
