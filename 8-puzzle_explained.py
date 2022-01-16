@@ -227,6 +227,6 @@ def a_star(graph: Graph, n: int, h_type: str = 'euristica banala'):
 
 
 if __name__ == '__main__':
-    graph = Graph('../resources/8-puzzle.txt')
+    graph = Graph('tema_1_cautare/dir_in/8-puzzle.txt')
     a_star(graph, n=1)
     #breadth_first(graph)
